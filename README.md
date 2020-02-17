@@ -99,3 +99,10 @@
 - whatIf
     - Run `whatIf` and press enter to write in your own value that you can see in parent.txt and child.txt
     - Run `whatIf fileName.txt` to specify the file from where parent.txt and child.txt will read from.
+
+### Updated files
+- whatIf.c has been added to accomodate for whatIf system call
+    - Makefile updated to reflect the whatIf command
+    - Makefile updated to add a sample.txt file to test whatIf.c
+- `runcmd()` has been updated in sh.c to make it work with nonohup. View the comments in there to understand the implementation
+    - Implemented in there to make it easy to look for "nonohup" command.
