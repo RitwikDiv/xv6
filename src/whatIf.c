@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
     } else {
       write(parentFile,buf,sizeof(buf)-1);
     }
+    close(inpFile);
   }
   else{
     // open the console to take input from the user in read write mode similar to sh.c
@@ -54,7 +55,10 @@ int main(int argc, char *argv[]){
     } else {
       write(parentFile,buf,sizeof(buf)-1);
     }
+    close(consoleOpen);
   }
+  close(childFile);
+  close(parentFile);
   return 0;
 }
 
