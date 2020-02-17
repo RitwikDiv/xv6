@@ -90,6 +90,7 @@ runcmd(struct cmd *cmd)
     // every other argument will run in a regular way
     else{
       exec(ecmd->argv[0], ecmd->argv);
+      // the print is only executed when the previous statement fails
       printf(2, "exec %s failed\n", ecmd->argv[0]);
     }
     break;
