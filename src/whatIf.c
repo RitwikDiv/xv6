@@ -13,12 +13,9 @@ int main(int argc, char *argv[]){
   char *filename;
   int inpFile = -1;
   
-    // Creating the parent and child files regardless of input where they are write only with an option to create a new file
-  int parentFile = open("parent.txt", O_WRONLY|O_CREATE);
-  int childFile = open("child.txt", O_WRONLY|O_CREATE);
-  
   //Checking if the file has been passed
   if (argc == 2){
+    
     filename = argv[1];
     // Opening the file to be read on readonly mode
     inpFile = open(filename, O_RDONLY);
@@ -27,6 +24,9 @@ int main(int argc, char *argv[]){
       printf(2, "Failed to find the file %s\n",filename);
       exit();
     }
+    // Creating the parent and child files regardless of input where they are write only with an option to create a new file
+    int parentFile = open("parent.txt", O_WRONLY|O_CREATE);
+    int childFile = open("child.txt", O_WRONLY|O_CREATE);
     stat(filename, &st);
     long size = st.size;
     char buf[size];
@@ -40,13 +40,16 @@ int main(int argc, char *argv[]){
       wait();
     }
     close(inpFile);
+    close(childFile);
+    close(parentFile);
     free(buf);
   }
   else{
     //to take input from the console
     char buf[2048];
-    // create a buffer and set memory and get the input from the user
-    memset(buf, 0, sizeof(buf));
+    // Creating the parent and child files regardless of input where they are write only with an option to create a new file
+    int parentFile = open("parent.txt", O_WRONLY|O_CREATE);
+    int childFile = open("child.txt", O_WRONLY|O_CREATE);
     // open the console to take input from the user in read write mode similar to sh.c
     int consoleOpen;
     consoleOpen = open("console", O_RDWR);
@@ -55,19 +58,19 @@ int main(int argc, char *argv[]){
       }
     printf(1,"Enter content: ");
     gets(buf, sizeof(buf));
-
+    int trueSize = strlen(buf) - 1;
   // create parallel processes to write into the file 
     if(fork1() == 0){
-      write(childFile, buf, sizeof(buf));
+      write(childFile, buf, trueSize);
     } else {
-      write(parentFile,buf,sizeof(buf));
+      write(parentFile,buf, trueSize);
       wait();
     }
     close(consoleOpen);
+    close(childFile);
+    close(parentFile);
     free(buf);
   }
-  close(childFile);
-  close(parentFile);
   return 0;
 }
 
