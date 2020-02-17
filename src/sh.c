@@ -96,7 +96,7 @@ runcmd(struct cmd *cmd)
     break;
 
   case REDIR:
-    // printf(2, "runcmd REDIR has started execution \n");
+    // printf(1, "runcmd REDIR has started execution \n");
     rcmd = (struct redircmd*)cmd;
     close(rcmd->fd);
     if(open(rcmd->file, rcmd->mode) < 0){
@@ -116,12 +116,12 @@ runcmd(struct cmd *cmd)
     break;
 
   case PIPE:
-    // printf(2, "runcmd PIPE has started execution \n");
+    // printf(1, "runcmd PIPE has started execution \n");
     pcmd = (struct pipecmd*)cmd;
     if(pipe(p) < 0)
       panic("pipe");
     if(fork1() == 0){
-      // printf(2,"Pipe has been called on the left command");
+      // printf(1,"Pipe has been called on the left command");
       close(1);
       dup(p[1]);
       close(p[0]);
@@ -156,7 +156,7 @@ int
 getcmd(char *buf, int nbuf)
 {
   // printf(2, "getcmd has started \n");
-  printf(2, "\n$S20 ");
+  printf(2, "$S20 ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if(buf[0] == 0) // EOF

@@ -1,6 +1,8 @@
 
 
+src/_*
 src/*.d
+src/*.o
 src/*.asm
 src/*.sym
 src/*.img
@@ -13,3 +15,5 @@ src/kernel
 src/kernelmemfs
 src/mkfs
 src/.gdbinit
+.vscode/settings.json
+
