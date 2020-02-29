@@ -19,6 +19,7 @@ struct {
 void
 fileinit(void)
 {
+  cprintf("file has been initialized \n");
   initlock(&ftable.lock, "ftable");
 }
 
@@ -26,8 +27,8 @@ fileinit(void)
 struct file*
 filealloc(void)
 {
+  cprintf("file alloc has been called \n");
   struct file *f;
-
   acquire(&ftable.lock);
   for(f = ftable.file; f < ftable.file + NFILE; f++){
     if(f->ref == 0){
@@ -44,6 +45,7 @@ filealloc(void)
 struct file*
 filedup(struct file *f)
 {
+  // cprintf("file dup has been called \n");
   acquire(&ftable.lock);
   if(f->ref < 1)
     panic("filedup");
@@ -56,20 +58,19 @@ filedup(struct file *f)
 void
 fileclose(struct file *f)
 {
+  // cprintf("fileclose is called \n");
   struct file ff;
-
   acquire(&ftable.lock);
   if(f->ref < 1)
     panic("fileclose");
   if(--f->ref > 0){
-    release(&ftable.lock);
-    return;
-  }
+      release(&ftable.lock);
+      return;
+    }
   ff = *f;
   f->ref = 0;
   f->type = FD_NONE;
   release(&ftable.lock);
-
   if(ff.type == FD_PIPE)
     pipeclose(ff.pipe, ff.writable);
   else if(ff.type == FD_INODE){

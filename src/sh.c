@@ -57,7 +57,7 @@ struct cmd *parsecmd(char*);
 void
 runcmd(struct cmd *cmd)
 {
-  // printf(2, "runcmd has started execution \n");
+  printf(1, "runcmd has started execution \n");
   int p[2];
   struct backcmd *bcmd;
   struct execcmd *ecmd;
@@ -155,7 +155,7 @@ runcmd(struct cmd *cmd)
 int
 getcmd(char *buf, int nbuf)
 {
-  // printf(2, "getcmd has started \n");
+  printf(1, "getcmd has started \n");
   printf(2, "$S20 ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
@@ -207,6 +207,7 @@ panic(char *s)
 int
 fork1(void)
 {
+  printf(1, "fork1 is called \n");
   int pid;
   pid = fork();
   if(pid == -1)
@@ -220,7 +221,7 @@ fork1(void)
 struct cmd*
 execcmd(void)
 {
-  // printf(2, "execcmd has been executed \n");
+  printf(1, "execcmd has been executed \n");
   struct execcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -232,7 +233,7 @@ execcmd(void)
 struct cmd*
 redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int fd)
 {
-  // printf(2, "redircmd has been executed \n");
+  // printf(1, "redircmd has been executed \n");
   struct redircmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -249,7 +250,7 @@ redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int fd)
 struct cmd*
 pipecmd(struct cmd *left, struct cmd *right)
 {
-  // printf(2, "pipecmd has been executed \n");
+  // printf(1, "pipecmd has been executed \n");
   struct pipecmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -263,7 +264,7 @@ pipecmd(struct cmd *left, struct cmd *right)
 struct cmd*
 listcmd(struct cmd *left, struct cmd *right)
 {
-  // printf(2, "listcmd has been executed \n");
+  // printf(1, "listcmd has been executed \n");
   struct listcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -277,7 +278,7 @@ listcmd(struct cmd *left, struct cmd *right)
 struct cmd*
 backcmd(struct cmd *subcmd)
 {
-  // printf(2, "backcmd has been executed \n");
+  // printf(1, "backcmd has been executed \n");
   struct backcmd *cmd;
   cmd = malloc(sizeof(*cmd));
   memset(cmd, 0, sizeof(*cmd));
@@ -294,6 +295,7 @@ char symbols[] = "<|>&;()";
 int
 gettoken(char **ps, char *es, char **q, char **eq)
 {
+  // printf(1,"gettoken has been called \n");
   char *s;
   int ret;
 
@@ -339,6 +341,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
 int
 peek(char **ps, char *es, char *toks)
 {
+  // printf(1,"peek has been executed \n");
   char *s;
   s = *ps;
   while(s < es && strchr(whitespace, *s))
@@ -357,8 +360,6 @@ parsecmd(char *s)
 {
   char *es;
   struct cmd *cmd;
-  // printf(2, "parsecmd has been executed \n");
-
   es = s + strlen(s);
   cmd = parseline(&s, es);
   peek(&s, es, "");
@@ -373,7 +374,6 @@ parsecmd(char *s)
 struct cmd*
 parseline(char **ps, char *es)
 {
-  // printf(2, "parseline has been executed\n");
   struct cmd *cmd;
   // printf(2, "es -> %s\n", es);
   // printf(2, "ps -> %s\n", es);
@@ -392,7 +392,6 @@ parseline(char **ps, char *es)
 struct cmd*
 parsepipe(char **ps, char *es)
 {
-  // printf(2, "parsepipe has been executed \n");
   struct cmd *cmd;
 
   cmd = parseexec(ps, es);
@@ -408,7 +407,6 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
 {
   int tok;
   char *q, *eq;
-
   while(peek(ps, es, "<>")){
     tok = gettoken(ps, es, 0, 0);
     if(gettoken(ps, es, &q, &eq) != 'a')

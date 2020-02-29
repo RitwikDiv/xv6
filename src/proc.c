@@ -38,7 +38,7 @@ struct cpu*
 mycpu(void)
 {
   int apicid, i;
-  
+  // cprintf("mycpu has been called");
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
   
@@ -56,6 +56,7 @@ mycpu(void)
 // while reading proc from the cpu structure
 struct proc*
 myproc(void) {
+  // cprintf("my proc has been called");
   struct cpu *c;
   struct proc *p;
   pushcli();

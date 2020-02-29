@@ -83,6 +83,7 @@ argstr(int n, char **pp)
 }
 
 extern int sys_chdir(void);
+// extern keyword means that it can be called from anywhere as long as its implmented
 extern int sys_close(void);
 extern int sys_dup(void);
 extern int sys_exec(void);
