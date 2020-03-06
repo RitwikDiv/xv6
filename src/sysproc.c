@@ -89,3 +89,10 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+//printing all the current running processes
+int 
+sys_lp(void)
+{
+  return(procprint());
+}

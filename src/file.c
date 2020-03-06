@@ -19,7 +19,7 @@ struct {
 void
 fileinit(void)
 {
-  cprintf("file has been initialized \n");
+  // cprintf("file has been initialized \n");
   initlock(&ftable.lock, "ftable");
 }
 
@@ -27,7 +27,7 @@ fileinit(void)
 struct file*
 filealloc(void)
 {
-  cprintf("file alloc has been called \n");
+  // cprintf("file alloc has been called \n");
   struct file *f;
   acquire(&ftable.lock);
   for(f = ftable.file; f < ftable.file + NFILE; f++){

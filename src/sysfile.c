@@ -28,9 +28,9 @@ argfd(int n, int *pfd, struct file **pf)
   if(argint(n, &fd) < 0)
     return -1;
   if(fd < 0 || fd >= NOFILE || (f=myproc()->ofile[fd]) == 0){
-    cprintf("(f = %d) \n",f);
+    // cprintf("(f = %d) \n",f);
     // cprintf("NOFILE number: %d \n",NOFILE);
-    cprintf("file wasn't found i think \n");
+    // cprintf("File wasnt found \n");
     return -1;
   }
   if(pfd)
@@ -99,11 +99,11 @@ int
 sys_close(void)
 {
   int fd;
-  cprintf("sys_close has been invoked\n");
+  // cprintf("sys_close has been invoked\n");
   struct file *f;
 
   if(argfd(0, &fd, &f) < 0){
-    cprintf("the condition passed for argfd i.e. file couldn't be found? \n");
+    // cprintf("the condition passed for argfd i.e. file couldn't be found? \n");
     return -1;
   }
   // this sets the file to close

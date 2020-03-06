@@ -1,6 +1,8 @@
 #include "types.h"
 #include "user.h"
 #include "fcntl.h"
+// #include "proc.h"
+// #include "defs.h"
 
 int main(int argc, char *argv[]){
     int fd = 9; 

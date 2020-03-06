@@ -57,7 +57,7 @@ struct cmd *parsecmd(char*);
 void
 runcmd(struct cmd *cmd)
 {
-  printf(1, "runcmd has started execution \n");
+  // printf(1, "runcmd has started execution \n");
   int p[2];
   struct backcmd *bcmd;
   struct execcmd *ecmd;
@@ -155,7 +155,7 @@ runcmd(struct cmd *cmd)
 int
 getcmd(char *buf, int nbuf)
 {
-  printf(1, "getcmd has started \n");
+  // printf(1, "getcmd has started \n");
   printf(2, "$S20 ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
@@ -207,7 +207,7 @@ panic(char *s)
 int
 fork1(void)
 {
-  printf(1, "fork1 is called \n");
+  // printf(1, "fork1 is called \n");
   int pid;
   pid = fork();
   if(pid == -1)
@@ -221,7 +221,7 @@ fork1(void)
 struct cmd*
 execcmd(void)
 {
-  printf(1, "execcmd has been executed \n");
+  // printf(1, "execcmd has been executed \n");
   struct execcmd *cmd;
 
   cmd = malloc(sizeof(*cmd));

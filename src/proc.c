@@ -89,7 +89,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-
+  p->multiplicity = 1.0;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -121,6 +121,7 @@ found:
 void
 userinit(void)
 {
+  // cprintf("userinit is called");
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
@@ -150,6 +151,7 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
+  p->multiplicity = 1;
 
   release(&ptable.lock);
 }
@@ -161,7 +163,6 @@ growproc(int n)
 {
   uint sz;
   struct proc *curproc = myproc();
-
   sz = curproc->sz;
   if(n > 0){
     if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)
@@ -306,10 +307,36 @@ wait(void)
       release(&ptable.lock);
       return -1;
     }
-
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(curproc, &ptable.lock);  //DOC: wait-sleep
   }
+}
+
+int 
+procprint(void)
+{
+  struct proc *p;
+  // Enables interrupts on this process
+  sti();
+
+  acquire(&ptable.lock);
+  cprintf("Name \t pid \t state \t multiplicity \n");
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if (p->state == SLEEPING)
+      cprintf("%s \t %d \t SLEEPING \t %d \n", 
+                              p->name, p->pid,p->multiplicity);
+    else if (p->state == RUNNABLE)
+      cprintf("%s \t %d \t RUNNABLE \t %d \n", 
+                              p->name, p->pid,p->multiplicity);
+    else if (p->state == RUNNING)
+      cprintf("%s \t %d \t RUNNING \t %d \n", 
+                              p->name, p->pid, p->multiplicity);
+
+  }
+  myproc()->killed = 1;
+  // cprintf("ACTIVE PROCESS: %s \t %d \t %d \n",  p->name, p->pid, p->multiplicity);
+  release(&ptable.lock);
+  return 22;
 }
 
 //PAGEBREAK: 42
