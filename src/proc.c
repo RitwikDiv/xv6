@@ -72,7 +72,7 @@ myproc(void) {
 // state required to run in the kernel.
 // Otherwise return 0.
 static struct proc*
-allocproc(void)
+allocproc(int clocktick)
 {
   struct proc *p;
   char *sp;
@@ -89,7 +89,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->multiplicity = 1.0;
+  p->clocktick = clocktick;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -102,6 +102,7 @@ found:
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
   p->tf = (struct trapframe*)sp;
+  // cprintf("New trapno: %d", p->tf->trapno);
 
   // Set up new context to start executing at forkret,
   // which returns to trapret.
@@ -111,7 +112,7 @@ found:
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  p->context->eip = (uint)forkret;
+  p->context->eip = (uint)forkret; 
 
   return p;
 }
@@ -121,11 +122,12 @@ found:
 void
 userinit(void)
 {
-  // cprintf("userinit is called");
+  cprintf("userinit is called");
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
-  p = allocproc();
+  int clocktick = 0;
+  p = allocproc(clocktick);
   
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -151,7 +153,6 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
-  p->multiplicity = 1;
 
   release(&ptable.lock);
 }
@@ -185,9 +186,9 @@ fork(void)
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
-
+  int clocktick = 0;
   // Allocate process.
-  if((np = allocproc()) == 0){
+  if((np = allocproc(clocktick)) == 0){
     return -1;
   }
 
@@ -248,6 +249,7 @@ exit(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
+  curproc->etime = ticks;
 
   acquire(&ptable.lock);
 
@@ -312,6 +314,8 @@ wait(void)
   }
 }
 
+
+
 int 
 procprint(void)
 {
@@ -320,21 +324,24 @@ procprint(void)
   sti();
 
   acquire(&ptable.lock);
-  cprintf("Name \t pid \t state \t multiplicity \n");
+  cprintf("Name \t pid \t state \t creationTime \t exittime\n ");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if (p->state == SLEEPING)
       cprintf("%s \t %d \t SLEEPING \t %d \n", 
-                              p->name, p->pid,p->multiplicity);
+                              p->name, p->pid,p->ctime, p->etime);
     else if (p->state == RUNNABLE)
       cprintf("%s \t %d \t RUNNABLE \t %d \n", 
-                              p->name, p->pid,p->multiplicity);
+                              p->name, p->pid,p->ctime, p->etime);
     else if (p->state == RUNNING)
       cprintf("%s \t %d \t RUNNING \t %d \n", 
-                              p->name, p->pid, p->multiplicity);
+                              p->name, p->pid,p->ctime, p->etime);
+    else if (p->state == ZOMBIE)
+      cprintf("%s \t %d \t ZOMBIE \t %d \n", 
+                              p->name, p->pid, p->ctime, p->etime);
 
   }
   myproc()->killed = 1;
-  // cprintf("ACTIVE PROCESS: %s \t %d \t %d \n",  p->name, p->pid, p->multiplicity);
+  // cprintf("ACTIVE PROCESS: %s \t %d \t %d \n",  p->name, p->pid, p->clocktick);
   release(&ptable.lock);
   return 22;
 }
@@ -407,6 +414,24 @@ sched(void)
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
   mycpu()->intena = intena;
+}
+
+void
+resched(void)
+{
+  struct proc *p = myproc();
+  if(p->state == RUNNABLE)
+    p->state = RUNNING;
+}
+
+void
+reyield(void)
+{
+  acquire(&ptable.lock);  //DOC: yieldlock
+  myproc()->state = RUNNABLE;
+  resched();
+  myproc()->ytime = ticks;
+  release(&ptable.lock);
 }
 
 // Give up the CPU for one scheduling round.
@@ -559,4 +584,52 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+int
+alsoNice(int clocktick)
+{
+  cprintf("\n List of processes in the beginning: %d \n",procprint());
+  cprintf("\n");
+  int i, pid;
+  struct proc *np;
+  struct proc *curproc = myproc();
+  // Allocate process.
+  if((np = allocproc(clocktick)) == 0){
+    return -1;
+  }
+  // Copy process state from proc.
+  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+  np->sz = curproc->sz;
+  np->parent = curproc;
+  *np->tf = *curproc->tf;
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(curproc->ofile[i])
+      np->ofile[i] = filedup(curproc->ofile[i]);
+  np->cwd = idup(curproc->cwd);
+
+  safestrcpy(np->name, curproc->name, sizeof(curproc->name));
+
+  pid = np->pid;
+
+  acquire(&ptable.lock);
+
+  np->state = RUNNABLE;
+  np->ctime = ticks;
+  np->ytime = 0;
+
+  release(&ptable.lock);
+
+  cprintf("\n List of processes after the execution: %d \n",procprint());
+  cprintf("\n");
+  return pid;
 }

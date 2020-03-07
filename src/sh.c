@@ -83,8 +83,26 @@ runcmd(struct cmd *cmd)
     else if(strcmp(ecmd->argv[0],"nonohup")==0){
       // if its nonohup, it performs the functionality similar to & where it creates a fork and runs the
       // from the forked child process thereby running it in the background.
-      if(fork1() == 0){
+      if (strcmp(ecmd->argv[1], "alsoNice") == 0){
+        int clocktick = atoi(ecmd->argv[2]);
+        if (alsoNice(clocktick) == 0){
+            // printf(1, "Fork is successful");
+            exec(ecmd->argv[3], &(ecmd->argv[3]));
+        } else{
+          wait();
+        }
+      }
+      else if(fork1() == 0){
         exec(ecmd->argv[1], &(ecmd->argv[1]));
+      }
+    }
+    else if (strcmp(ecmd->argv[0], "alsoNice") == 0){
+      int clocktick = atoi(ecmd->argv[1]);
+      int fid = alsoNice(clocktick);
+      if (fid == 0){
+          exec(ecmd->argv[2], &(ecmd->argv[2]));
+      } else{
+        kill(fid);
       }
     }
     // every other argument will run in a regular way

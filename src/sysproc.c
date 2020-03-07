@@ -96,3 +96,12 @@ sys_lp(void)
 {
   return(procprint());
 }
+
+int
+sys_alsoNice(void)
+{
+  int clocktick;
+  argint(0,&clocktick);
+  // cprintf("%d \n",multiplicity);
+  return(alsoNice(clocktick));
+}

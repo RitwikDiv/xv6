@@ -184,6 +184,7 @@ UPROGS=\
 	_whatIf\
 	_testClose\
 	_lp\
+	_alsoNiceTest\
 
 fs.img: mkfs README sample.txt $(UPROGS)
 	./mkfs fs.img README sample.txt $(UPROGS)
@@ -253,7 +254,7 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
-	printf.c umalloc.c whatIf.c testClose.c lp.c\
+	printf.c umalloc.c whatIf.c testClose.c lp.c alsoNiceTest.c\
 	README sample.txt dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 

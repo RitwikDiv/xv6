@@ -24,6 +24,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int lp(void);
+int alsoNice(int);
 
 // ulib.c
 int stat(const char*, struct stat*);
