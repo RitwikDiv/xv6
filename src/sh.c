@@ -98,6 +98,9 @@ runcmd(struct cmd *cmd)
     }
     else if (strcmp(ecmd->argv[0], "alsoNice") == 0){
       int clocktick = atoi(ecmd->argv[1]);
+      if (clocktick < 0){
+        printf(2, "Required: clocktick > 0 ");
+      }
       int fid = alsoNice(clocktick);
       if (fid == 0){
           exec(ecmd->argv[2], &(ecmd->argv[2]));

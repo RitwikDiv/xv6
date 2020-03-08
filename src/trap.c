@@ -105,13 +105,17 @@ trap(struct trapframe *tf)
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
   if(myproc() && myproc()->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER){
+      // initial tick is calculated and that is added to the creation time to determine the first yield time 
       int initTick = ticks;
       if (myproc()->clocktick > 0){
         while((ticks - initTick) >= myproc()->clocktick){
-          }    
+          // This above loops lets time pass until the clock tick value we pass is achieved.
+          // Once it executes the process for n more clock ticks, it yields its time. 
+          rescheduler(myproc()); 
+          }
         myproc()->ytime = myproc()->ctime + myproc()->clocktick;
+        }
         yield();
-      }
   }
 
 
