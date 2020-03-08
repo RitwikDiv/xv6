@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
       write(childFile, buf, size);
     } else {
       write(parentFile,buf,size);
-      wait();
+      kill(getpid());
     }
     close(inpFile);
     close(childFile);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
       write(childFile, buf, trueSize);
     } else {
       write(parentFile,buf, trueSize);
-      wait();
+      kill(getpid());
     }
     close(consoleOpen);
     close(childFile);

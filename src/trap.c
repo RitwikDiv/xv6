@@ -108,10 +108,9 @@ trap(struct trapframe *tf)
       int initTick = ticks;
       if (myproc()->clocktick > 0){
         while((ticks - initTick) >= myproc()->clocktick){
-              reyield();
-            }
-            myproc()->ytime = ticks;
-         yield();
+          }    
+        myproc()->ytime = myproc()->ctime + myproc()->clocktick;
+        yield();
       }
   }
 

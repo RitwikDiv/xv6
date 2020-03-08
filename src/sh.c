@@ -102,7 +102,7 @@ runcmd(struct cmd *cmd)
       if (fid == 0){
           exec(ecmd->argv[2], &(ecmd->argv[2]));
       } else{
-        kill(fid);
+        wait();
       }
     }
     // every other argument will run in a regular way

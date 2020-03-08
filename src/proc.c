@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "fcntl.h"
 
 struct {
   struct spinlock lock;
@@ -218,6 +219,7 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
+  np->ctime = ticks;
 
   release(&ptable.lock);
 
@@ -249,7 +251,6 @@ exit(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
-  curproc->etime = ticks;
 
   acquire(&ptable.lock);
 
@@ -289,6 +290,11 @@ wait(void)
         continue;
       havekids = 1;
       if(p->state == ZOMBIE){
+        p->etime = ticks;
+        cprintf("\n ------------------------------------------------- \n");
+        cprintf("\n pname: %s \t pid: %d \t ctime: %d \t ytime: %d \n", 
+                              p->name, p->pid, p->ctime, p->ytime);
+        cprintf("\n ------------------------------------------------- \n");
         // Found one.
         pid = p->pid;
         kfree(p->kstack);
@@ -324,20 +330,20 @@ procprint(void)
   sti();
 
   acquire(&ptable.lock);
-  cprintf("Name \t pid \t state \t creationTime \t exittime\n ");
+  cprintf("Name \t pid \t state \t creationtime \t yieldtime \t\n ");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if (p->state == SLEEPING)
-      cprintf("%s \t %d \t SLEEPING \t %d \n", 
-                              p->name, p->pid,p->ctime, p->etime);
+      cprintf("%s \t %d \t SLEEPING \t %d \t %d \n", 
+                              p->name, p->pid,p->ctime, p->ytime);
     else if (p->state == RUNNABLE)
-      cprintf("%s \t %d \t RUNNABLE \t %d \n", 
-                              p->name, p->pid,p->ctime, p->etime);
+      cprintf("%s \t %d \t RUNNABLE \t %d \t %d \n", 
+                              p->name, p->pid,p->ctime, p->ytime);
     else if (p->state == RUNNING)
-      cprintf("%s \t %d \t RUNNING \t %d \n", 
-                              p->name, p->pid,p->ctime, p->etime);
+      cprintf("%s \t %d \t RUNNING \t %d \t %d \n", 
+                              p->name, p->pid,p->ctime, p->ytime);
     else if (p->state == ZOMBIE)
-      cprintf("%s \t %d \t ZOMBIE \t %d \n", 
-                              p->name, p->pid, p->ctime, p->etime);
+      cprintf("%s \t %d \t ZOMBIE \t %d \t %d \n", 
+                              p->name, p->pid, p->ctime, p->ytime);
 
   }
   myproc()->killed = 1;
@@ -402,7 +408,6 @@ sched(void)
 {
   int intena;
   struct proc *p = myproc();
-
   if(!holding(&ptable.lock))
     panic("sched ptable.lock");
   if(mycpu()->ncli != 1)
@@ -430,7 +435,6 @@ reyield(void)
   acquire(&ptable.lock);  //DOC: yieldlock
   myproc()->state = RUNNABLE;
   resched();
-  myproc()->ytime = ticks;
   release(&ptable.lock);
 }
 
@@ -533,10 +537,10 @@ int
 kill(int pid)
 {
   struct proc *p;
-
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
+      p->etime = ticks;
       p->killed = 1;
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
@@ -589,8 +593,6 @@ procdump(void)
 int
 alsoNice(int clocktick)
 {
-  cprintf("\n List of processes in the beginning: %d \n",procprint());
-  cprintf("\n");
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
@@ -629,7 +631,7 @@ alsoNice(int clocktick)
 
   release(&ptable.lock);
 
-  cprintf("\n List of processes after the execution: %d \n",procprint());
-  cprintf("\n");
+  // cprintf("\n LP: Beginning %d \n",procprint());
+  // cprintf("\n");
   return pid;
 }
